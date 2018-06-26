@@ -1,0 +1,13 @@
+.main-wrapper {
+  padding: 8% 0;
+}
+
+.main__heading,
+.aside__heading {
+  margin-bottom: 4%;
+}
+
+.convert {
+  margin-top: 4%;
+  text-align: center;
+}

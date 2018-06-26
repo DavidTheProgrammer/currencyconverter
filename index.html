@@ -23,19 +23,53 @@
     </nav>
   </header>
 
-  <div class="main-wrapper">
-    <main>
+  <div class="main-wrapper container">
+    <div class="row">
+      <main class="col s12 l9">
+        <h5 class="main__heading">Convert</h5>
 
-    </main>
+        <form action="#">
+          <div class="inputs row">
 
-    <aside>
+            <div class="inputs__amount input-field col s12 m2">
+              <input placeholder="0" id="amount" type="number" class="validate">
+              <label for="amount">Amount</label>
+            </div>
 
-    </aside>
+            <div class="inputs__from input-field col s12 m5">
+              <select class="icons" disabled>
+                <option selected>Loading...</option>
+              </select>
+              <label>From</label>
+            </div>
+
+            <div class="inputs__from input-field col s12 m5">
+              <select class="icons" disabled>
+                <option selected>Loading...</option>
+              </select>
+              <label>To</label>
+            </div>
+
+          </div>
+
+          <div class="convert">
+            <button class="waves-effect waves-light btn" type="submit">
+              <i class="material-icons right">autorenew</i>CONVERT</button>
+          </div>
+        </form>
+
+      </main>
+
+      <aside class="col s12 l3">
+        <h5 class="aside__heading">Recent Conversions</h5>
+      </aside>
+    </div>
+
   </div>
 
   <!-- Compiled and minified JavaScript -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
-  <script src="./js/sw.js"></script>
+  <script src="./js/main.js"></script>
   <script src="./js/sw.js"></script>
 </body>
 
