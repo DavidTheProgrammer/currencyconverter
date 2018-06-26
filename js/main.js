@@ -18,66 +18,64 @@ class CurrencyConverter {
       classes: 'toast__error'
     });
 
-    const selects = document.querySelectorAll('select');
+    const $selects = document.querySelectorAll('select');
 
     // Change the message from loading to Error
-    selects.forEach(node => {
-      const child = node.firstElementChild;
-      child.textContent = 'Error...';
+    $selects.forEach($node => {
+      const $child = $node.firstElementChild;
+      $child.textContent = 'Error...';
     });
 
     // Re init the selects
-    M.FormSelect.init(selects);
+    M.FormSelect.init($selects);
   }
 
   /**
    * Build the currency selection list.
    */
   buildSelectOptions() {
-    const selects = document.querySelectorAll('select');
+    const $selects = document.querySelectorAll('select');
 
     // Create the option elements
     const optionElements = [];
 
     // For each country build a node
     this.countries.forEach(country => {
-      const element = document.createElement('option');
-      const textNode = document.createTextNode(
+      const $element = document.createElement('option');
+      const $textNode = document.createTextNode(
         `${country['name']} - ${country['currencyId']}`
       );
 
-      element.appendChild(textNode);
-      element.setAttribute('value', country['currencyId']);
-      element.setAttribute('data-icon', getFlagUrl(country['id']));
-      element.className = 'right';
+      $element.appendChild($textNode);
+      $element.setAttribute('value', country['currencyId']);
+      $element.setAttribute('data-icon', getFlagUrl(country['id']));
+      $element.className = 'right';
 
       // push to the option elements
-      optionElements.push(element);
+      optionElements.push($element);
     });
 
     // For each node append all the option elements
-    selects.forEach((node, index) => {
-      optionElements.forEach(element => {
+    $selects.forEach(($node, index) => {
+      optionElements.forEach($element => {
         if (index === 0) {
-          node.appendChild(element);
+          $node.appendChild($element);
         } else {
-          node.appendChild(element.cloneNode(true));
+          $node.appendChild($element.cloneNode(true));
         }
       });
 
       // Remove the disabled attribute
-      node.removeAttribute('disabled');
-      // Remove the loading options
-      node.removeChild(node.firstElementChild);
-
-      // Tie the active node to the element that's being iterated over
-      const activeNode = node.children[index];
-
-      activeNode.setAttribute('selected', true);
+      $node.removeAttribute('disabled');
+      // Change the loading options to "Select Currency" and disable them
+      const $loading = $node.firstElementChild;
+      $loading.textContent = 'Select currency';
+      $loading.setAttribute('disabled', true);
+      $loading.setAttribute('value', 'none');
     });
 
     // Reinitialise the dropdowns after appending countries
-    M.FormSelect.init(selects);
+    M.FormSelect.init($selects);
   }
 
   /**
@@ -103,7 +101,97 @@ class CurrencyConverter {
   /**
    * Set event listerners for the form and other elements
    */
-  setEventListeners() {}
+  setEventListeners() {
+    // Elements
+    const $form = document.getElementById('form');
+    const $amount = document.getElementById('amount');
+    const $from = document.getElementById('from');
+    const $to = document.getElementById('to');
+
+    // HTML Collection of options
+    const $fromOptions = $from.children;
+    const $toOptions = $to.children;
+
+    // Amount input
+    $amount.addEventListener('input', event => {
+      const amountValue = event.target.value;
+      const fromValue = $from.options[from.selectedIndex].value;
+      const toValue = $to.options[to.selectedIndex].value;
+
+      this._toggleSubmitButton(amountValue, fromValue, toValue);
+    });
+
+    // From input
+    $from.addEventListener('change', event => {
+      const fromValue = event.target.value;
+      const amountValue = $amount.value;
+      const toValue = $to.options[to.selectedIndex].value;
+
+      // Enable / Disable the submit button
+      this._toggleSubmitButton(amountValue, fromValue, toValue);
+
+      // Disable the selected option so you can't change from and to the same currency
+      for (let i = 1; i < $toOptions.length; i++) {
+        // We start at index 1, ignoring the original
+        const $option = $toOptions[i];
+
+        if ($option.value === fromValue) {
+          $option.setAttribute('disabled', true);
+        } else {
+          $option.removeAttribute('disabled');
+        }
+      }
+
+      // Re initialise the selection
+      M.FormSelect.init($to);
+    });
+
+    // To input
+    $to.addEventListener('change', event => {
+      const toValue = event.target.value;
+      const amountValue = $amount.value;
+      const fromValue = $from.options[$from.selectedIndex].value;
+
+      this._toggleSubmitButton(amountValue, fromValue, toValue);
+
+      // Disable selected option on from selection to avoid changing to same currency
+      for (let i = 1; i < $fromOptions.length; i++) {
+        // We start at index 1, ignoring the original
+        const $option = $fromOptions[i];
+
+        if ($option.value === toValue) {
+          $option.setAttribute('disabled', true);
+        } else {
+          $option.removeAttribute('disabled');
+        }
+      }
+
+      // Re initialise the selection
+      M.FormSelect.init($from);
+    });
+
+    // Form submission
+    $form.addEventListener('submit', event => {
+      event.preventDefault();
+      console.log(event);
+    });
+  }
+
+  /**
+   * Toogles the submit button disabled state based on the parameters
+   * @param {number} amountValue The value in the amount field
+   * @param {string} fromValue The value of the from select element
+   * @param {string} toValue The value of the to select element
+   */
+  _toggleSubmitButton(amountValue, fromValue, toValue) {
+    const $submit = document.getElementById('submit-button');
+
+    if (amountValue > 0 && fromValue !== 'none' && toValue !== 'none') {
+      $submit.removeAttribute('disabled');
+    } else {
+      $submit.setAttribute('disabled', true);
+    }
+  }
 }
 
 // ======================================================================//
@@ -168,8 +256,8 @@ function init() {
 
   document.addEventListener('DOMContentLoaded', () => {
     // Initialise the selectors on document ready with the "Loading options"
-    const elems = document.querySelectorAll('select');
-    M.FormSelect.init(elems);
+    const $elems = document.querySelectorAll('select');
+    M.FormSelect.init($elems);
 
     // Request for the countries
     xChange
@@ -177,14 +265,11 @@ function init() {
       .then(res => {
         cc.countries = cc.sortCountriesByName(res);
         cc.buildSelectOptions();
+        cc.setEventListeners();
       })
       .catch(err => {
         cc.errorLoadingCountries();
-        console.log(err);
       });
-
-    // Set event listeners
-    cc.setEventListeners();
   });
 }
 
