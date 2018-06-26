@@ -1,5 +1,12 @@
 .main-wrapper {
-  padding: 8% 0;
+  padding: 4% 0;
+}
+
+.main {
+}
+
+.aside {
+  margin-top: 8%;
 }
 
 .main__heading,
@@ -10,4 +17,23 @@
 .convert {
   margin-top: 4%;
   text-align: center;
+}
+
+.toast__error {
+  background-color: red;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toast__message {
+  padding-right: 4%;
+}
+
+@media screen and (min-width: 993px) {
+  .aside {
+    margin-top: initial;
+    margin-left: 4%;
+  }
 }

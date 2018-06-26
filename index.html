@@ -25,10 +25,10 @@
 
   <div class="main-wrapper container">
     <div class="row">
-      <main class="col s12 l9">
+      <main class="main col s12 l8">
         <h5 class="main__heading">Convert</h5>
 
-        <form action="#">
+        <form action="#" id="form">
           <div class="inputs row">
 
             <div class="inputs__amount input-field col s12 m2">
@@ -37,14 +37,14 @@
             </div>
 
             <div class="inputs__from input-field col s12 m5">
-              <select class="icons" disabled>
+              <select class="icons" id="from" disabled>
                 <option selected>Loading...</option>
               </select>
               <label>From</label>
             </div>
 
             <div class="inputs__from input-field col s12 m5">
-              <select class="icons" disabled>
+              <select class="icons" id="to" disabled>
                 <option selected>Loading...</option>
               </select>
               <label>To</label>
@@ -53,14 +53,14 @@
           </div>
 
           <div class="convert">
-            <button class="waves-effect waves-light btn" type="submit">
+            <button class="waves-effect waves-light btn" type="submit" id="submit-button" disabled>
               <i class="material-icons right">autorenew</i>CONVERT</button>
           </div>
         </form>
 
       </main>
 
-      <aside class="col s12 l3">
+      <aside class="aside col s12 l3 offset-l1">
         <h5 class="aside__heading">Recent Conversions</h5>
       </aside>
     </div>
