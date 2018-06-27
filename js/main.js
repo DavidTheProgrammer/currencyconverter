@@ -102,6 +102,8 @@ class CurrencyConverter {
    * Set event listerners for the form and other elements
    */
   setEventListeners() {
+    // Class
+    const xChange = new Xchange();
     // Elements
     const $form = document.getElementById('form');
     const $amount = document.getElementById('amount');
@@ -143,7 +145,7 @@ class CurrencyConverter {
       }
 
       // Re initialise the selection
-      M.FormSelect.init($to);
+      M.FormSelect.init($to); // Performance issue?. Suspect it's the source of the screen jitter bug
     });
 
     // To input
@@ -172,8 +174,30 @@ class CurrencyConverter {
 
     // Form submission
     $form.addEventListener('submit', event => {
+      // Prevent default actions
       event.preventDefault();
-      console.log(event);
+
+      // open the modal
+      const modal = document.getElementById('conversion-modal');
+      const modalInstance = M.Modal.init(modal, {
+        onCloseEnd: () => this._resetModalClasses()
+      });
+      modalInstance.open();
+
+      const amount = $amount.value;
+      const fromValue = $from.options[$from.selectedIndex].value;
+      const toValue = $to.options[$to.selectedIndex].value;
+
+      xChange
+        .getRate(fromValue, toValue)
+        .then(res => {
+          const key = `${fromValue}_${toValue}`;
+          const rate = res[key];
+          this._showConversion(amount, fromValue, toValue, rate, modalInstance);
+        })
+        .catch(err => {
+          this._errorConverting(modalInstance);
+        });
     });
   }
 
@@ -191,6 +215,60 @@ class CurrencyConverter {
     } else {
       $submit.setAttribute('disabled', true);
     }
+  }
+
+  /**
+   * Handles the data population and class manipulation of the modal elements
+   * @param {number} amount The amount we're converting
+   * @param {string} fromValue The currency we're converting from
+   * @param {string} toValue The currency we're converting to
+   * @param {number} rate The exchange rate
+   */
+  _showConversion(amount, fromValue, toValue, rate) {
+    // Elements
+    const $preloader = document.getElementById('preloader');
+    const $data = document.getElementById('data');
+    const $convertedFrom = document.getElementById('converted-from');
+    const $convertedTo = document.getElementById('converted-to');
+    const $rate = document.getElementById('rate');
+
+    // Convert amount and round off to 3 dp
+    const convertedAmount = (amount * rate).toFixed(2);
+
+    // Insert the values in their respective fields
+    $convertedFrom.textContent = `${amount} ${fromValue}`;
+    $convertedTo.textContent = `${convertedAmount} ${toValue}`;
+    $rate.textContent = `${rate}`;
+
+    // Hide the preloader and show the data
+    $preloader.className = 'modal__preloader--hidden';
+    $data.className = 'modal__data--visible animated fadeIn';
+  }
+
+  /**
+   * Closes the modal instance and shows an error toast message
+   * @param {*} modalInstance The instance of the modal so we can close it
+   */
+  _errorConverting(modalInstance) {
+    modalInstance.close();
+
+    M.toast({
+      html: `
+      <span class="toast__message">Could not convert. Please try again</span>
+      <i class="material-icons">error</i>
+      `,
+      classes: 'toast__error'
+    });
+  }
+
+  /**
+   * This resets the modal classes on close end
+   */
+  _resetModalClasses() {
+    const $preloader = document.getElementById('preloader');
+    const $data = document.getElementById('data');
+    $preloader.className = 'modal__preloader';
+    $data.className = 'modal__data';
   }
 }
 
@@ -229,9 +307,15 @@ class Xchange {
   getRate(from = 'USD', to = 'ZMW') {
     const key = `${from}_${to}`;
 
-    return fetch(`${this._BASE_URL}/convert?q=${key}&compact=ultra`).then(res =>
-      res.json()
-    );
+    return fetch(`${this._BASE_URL}/convert?q=${key}&compact=ultra`)
+      .then(res => {
+        if (!res.ok) {
+          throw Error(res.statusText);
+        }
+
+        return res;
+      })
+      .then(res => res.json());
   }
 }
 
@@ -244,7 +328,7 @@ function getFlagUrl(code = 'AD') {
 }
 
 // ======================================================================//
-// Main Code
+// Init Code
 // ======================================================================//
 
 /**

@@ -2,9 +2,6 @@
   padding: 4% 0;
 }
 
-.main {
-}
-
 .aside {
   margin-top: 8%;
 }
@@ -36,4 +33,43 @@
     margin-top: initial;
     margin-left: 4%;
   }
+}
+
+/* Modal styles */
+.modal__heading {
+  margin-bottom: 2%;
+}
+
+.modal__content {
+  padding-top: 32px;
+}
+
+.modal__preloader {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+}
+
+.modal__preloader--hidden,
+.modal__data {
+  display: none;
+}
+
+.modal__data--visible {
+  display: block;
+}
+
+.values {
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.values__icon {
+  margin: 0 8px;
+  transform: translateY(7px);
+}
+
+.conversion__rate {
+  text-align: center;
+  color: rgb(126, 126, 126);
 }
