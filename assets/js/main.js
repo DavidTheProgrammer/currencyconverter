@@ -180,6 +180,7 @@ class CurrencyConverter {
       // open the modal
       const modal = document.getElementById('conversion-modal');
       const modalInstance = M.Modal.init(modal, {
+        onCloseStart: () => this._resetForm(),
         onCloseEnd: () => this._resetModalClasses()
       });
       modalInstance.open();
@@ -270,8 +271,6 @@ class CurrencyConverter {
 
     $preloader.className = 'modal__preloader';
     $data.className = 'modal__data';
-
-    this._resetForm();
   }
 
   /**
