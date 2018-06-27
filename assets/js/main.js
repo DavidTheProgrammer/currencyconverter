@@ -267,8 +267,50 @@ class CurrencyConverter {
   _resetModalClasses() {
     const $preloader = document.getElementById('preloader');
     const $data = document.getElementById('data');
+
     $preloader.className = 'modal__preloader';
     $data.className = 'modal__data';
+
+    this._resetForm();
+  }
+
+  /**
+   * Resets the form to a blank state if the checkbox is ticked
+   */
+  _resetForm() {
+    const $clear = document.getElementById('clear');
+
+    if ($clear.checked) {
+      const $amount = document.getElementById('amount');
+      const $selects = document.querySelectorAll('select');
+      const $from = $selects[0];
+      const $to = $selects[1];
+      const $submit = document.getElementById('submit-button');
+
+      const $fromOptions = $from.children;
+      const $toOptions = $to.children;
+
+      // Reset the values
+      $amount.value = 0;
+      $from.selectedIndex = 0;
+      $to.selectedIndex = 0;
+
+      // remove the disabled attribute from the children of both selections
+      for (let i = 1; i < $fromOptions.length; i++) {
+        // We start at index 1, ignoring the original
+        const $fromOption = $fromOptions[i];
+        const $toOption = $toOptions[i];
+
+        $fromOption.removeAttribute('disabled');
+        $toOption.removeAttribute('disabled');
+      }
+
+      // Reinitialise the selections
+      M.FormSelect.init($selects);
+
+      // Deactivate submit button
+      $submit.setAttribute('disabled', true);
+    }
   }
 }
 
