@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Currency Converter</title>
+
+  <link rel="stylesheet" href="./style.css">
+  <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+  <header class="navbar-fixed">
+    <nav>
+      <div class="nav-wrapper">
+        <a href="#!" class="brand-logo center">X-CHANGE</a>
+      </div>
+    </nav>
+
+    <div class="warning">
+
+    </div>
+  </header>
+
+  <div class="main-wrapper container">
+    <div class="row">
+      <main class="main col s12 l8">
+        <h5 class="main__heading">Convert</h5>
+
+        <form action="#" id="form">
+          <div class="inputs row">
+
+            <div class="inputs__amount input-field col s12 m2">
+              <input placeholder="0" id="amount" type="number" class="validate" required>
+              <label for="amount">Amount</label>
+            </div>
+
+            <div class="inputs__from input-field col s12 m5">
+              <select class="icons" id="from" disabled>
+                <option selected>Loading...</option>
+              </select>
+              <label>From</label>
+            </div>
+
+            <div class="inputs__from input-field col s12 m5">
+              <select class="icons" id="to" disabled>
+                <option selected>Loading...</option>
+              </select>
+              <label>To</label>
+            </div>
+
+          </div>
+
+          <div class="convert">
+            <button class="waves-effect waves-light btn" type="submit" id="submit-button" disabled>
+              <i class="material-icons right">autorenew</i>CONVERT</button>
+          </div>
+        </form>
+
+      </main>
+
+      <aside class="aside col s12 l3 offset-l1">
+        <h5 class="aside__heading">Recent Conversions</h5>
+      </aside>
+    </div>
+
+  </div>
+
+  <!-- Modal -->
+  <div id="conversion-modal" class="modal">
+    <div class="modal-content">
+      <h6 class="modal__heading">CONVERSION</h6>
+
+      <div class="modal__content">
+        <div class="modal__preloader" id="preloader">
+          <div class="preloader-wrapper active">
+            <div class="spinner-layer spinner-blue">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div>
+              <div class="gap-patch">
+                <div class="circle"></div>
+              </div>
+              <div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+
+            <div class="spinner-layer spinner-red">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div>
+              <div class="gap-patch">
+                <div class="circle"></div>
+              </div>
+              <div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+
+            <div class="spinner-layer spinner-yellow">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div>
+              <div class="gap-patch">
+                <div class="circle"></div>
+              </div>
+              <div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+
+            <div class="spinner-layer spinner-green">
+              <div class="circle-clipper left">
+                <div class="circle"></div>
+              </div>
+              <div class="gap-patch">
+                <div class="circle"></div>
+              </div>
+              <div class="circle-clipper right">
+                <div class="circle"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal__data" id="data">
+          <div class="values">
+            <span id="converted-from"></span>
+            <i class="material-icons small values__icon">arrow_right_alt</i>
+            <span id="converted-to"></span>
+          </div>
+          <p class="conversion__rate">
+            Exchange Rate
+            <br> 1 :
+            <span id="rate"></span>
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="modal-close waves-effect waves-green btn-flat">Close</button>
+    </div>
+  </div>
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
+  <script src="./js/main.js"></script>
+  <script src="./js/sw.js"></script>
+</body>
+
+</html>
