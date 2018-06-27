@@ -4,14 +4,14 @@
 <head>
   <meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Currency Converter</title>
 
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./assets/css/materialize.min.css">
+  <link rel="stylesheet" href="./assets/css/style.css">
   <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
 </head>
 
@@ -37,7 +37,7 @@
           <div class="inputs row">
 
             <div class="inputs__amount input-field col s12 m2">
-              <input placeholder="0" id="amount" type="number" class="validate" required>
+              <input placeholder="0.00" id="amount" type="number" step="0.01" class="validate" required>
               <label for="amount">Amount</label>
             </div>
 
@@ -48,13 +48,20 @@
               <label>From</label>
             </div>
 
-            <div class="inputs__from input-field col s12 m5">
+            <div class="inputs__to input-field col s12 m5">
               <select class="icons" id="to" disabled>
                 <option selected>Loading...</option>
               </select>
               <label>To</label>
             </div>
 
+          </div>
+
+          <div class="inputs__clear">
+            <label>
+              <input type="checkbox" id="clear" />
+              <span>Clear fields after converting</span>
+            </label>
           </div>
 
           <div class="convert">
@@ -147,14 +154,14 @@
     </div>
 
     <div class="modal-footer">
-      <button class="modal-close waves-effect waves-green btn-flat">Close</button>
+      <button class="modal-close waves-effect btn-flat">Close</button>
     </div>
   </div>
 
   <!-- Compiled and minified JavaScript -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
-  <script src="./js/main.js"></script>
-  <script src="./js/sw.js"></script>
+  <script src="./assets/js/main.js"></script>
+  <script src="./assets/js/sw.js"></script>
 </body>
 
 </html>
