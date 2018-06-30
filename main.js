@@ -311,6 +311,78 @@ class CurrencyConverter {
       $submit.setAttribute('disabled', true);
     }
   }
+
+  /**
+   * Registers the service worker
+   */
+  _registerServiceWorker() {
+    if (navigator.serviceWorker) {
+      // Register the SW
+      navigator.serviceWorker.register('/sw.js');
+    }
+  }
+}
+
+/**
+ * This class handles all the interactions with the database
+ */
+class LocalDb {
+  constructor() {
+    this._dbPromise = idb.open('x-change', 1, upgradeDb => {
+      const oldVersion = upgradeDb.oldVersion;
+
+      switch (oldVersion) {
+        case 0:
+          upgradeDb.createObjectStore('flags');
+          upgradeDb.createObjectStore('recent', { keyPath: 'currencies' });
+      }
+    });
+  }
+
+  /**
+   * This method retireves items from the IDB database
+   *
+   * @param {string} store The store to retrieve the item from
+   * @param {string} key The key of the item to retrieve
+   */
+  async getItem(store, key) {
+    try {
+      const db = await this._dbPromise();
+
+      const tx = db.transaction(store);
+      const objectStore = tx.objectStore(store);
+
+      // Return the value
+      return await objectStore.get(key);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  /**
+   * This adds a key value pair into the database
+   * @param {string} store - The store to add the item to
+   * @param {*} value - The value to insert into the database
+   * @param {string} [key] - The optional key of the item to put into the
+   */
+  async addItem(store, value, key) {
+    try {
+      const db = await this._dbPromise();
+
+      const tx = db.transaction(store, 'readwrite');
+      const objectStore = tx.objectStore(store);
+
+      if (key) {
+        objectStore.put(value, key);
+      } else {
+        objectStore.put(value);
+      }
+
+      return await tx.complete;
+    } catch (err) {
+      console.log(err);
+    }
+  }
 }
 
 // ======================================================================//
@@ -378,8 +450,13 @@ function getFlagUrl(code = 'AD') {
 function init() {
   const cc = new CurrencyConverter();
   const xChange = new Xchange();
+  const db = new LocalDb();
 
+  // Other Init Logic
   document.addEventListener('DOMContentLoaded', () => {
+    // Register the SW immediately
+    cc._registerServiceWorker();
+
     // Initialise the selectors on document ready with the "Loading options"
     const $elems = document.querySelectorAll('select');
     M.FormSelect.init($elems);
