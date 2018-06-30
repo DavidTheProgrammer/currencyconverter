@@ -2,8 +2,15 @@
  * This is the main class of the application. It holds the state and all
  */
 class CurrencyConverter {
-  constructor() {
+  /**
+   * Initialisation instructions
+   * @param {LocalDb} localDb The index db class
+   */
+  constructor(localDb) {
+    this.localDb = localDb; // The local db instance
     this.countries = []; // Holds the countries and their details
+    this.recentConversions = []; // Stores the 5 most recent conversions
+    this.networkState = 'online'; // The offline state of the application
   }
 
   /**
@@ -104,6 +111,7 @@ class CurrencyConverter {
   setEventListeners() {
     // Class
     const xChange = new Xchange();
+
     // Elements
     const $form = document.getElementById('form');
     const $amount = document.getElementById('amount');
@@ -113,6 +121,10 @@ class CurrencyConverter {
     // HTML Collection of options
     const $fromOptions = $from.children;
     const $toOptions = $to.children;
+
+    // Listen for changes in online state of the application
+    window.addEventListener('online', () => this._updateOnlineStatus());
+    window.addEventListener('offline', () => this._updateOnlineStatus());
 
     // Amount input
     $amount.addEventListener('input', event => {
@@ -181,7 +193,10 @@ class CurrencyConverter {
       const modal = document.getElementById('conversion-modal');
       const modalInstance = M.Modal.init(modal, {
         onCloseStart: () => this._resetForm(),
-        onCloseEnd: () => this._resetModalClasses()
+        onCloseEnd: () => {
+          this._resetModalClasses();
+          this._updateRecentConversions();
+        }
       });
       modalInstance.open();
 
@@ -195,11 +210,161 @@ class CurrencyConverter {
           const key = `${fromValue}_${toValue}`;
           const rate = res[key];
           this._showConversion(amount, fromValue, toValue, rate, modalInstance);
+          this._addToRecent(key, rate, amount);
         })
         .catch(err => {
           this._errorConverting(modalInstance);
         });
     });
+  }
+
+  /**
+   * Initiate the recent conversions
+   */
+  async initRecentConversions() {
+    try {
+      // Clean up the db
+      await this.localDb.cleanUp('recent', 5, 'by-date');
+
+      // Get the 5 most recent coverserions
+      const results = await this.localDb.getAllItems('recent', 'by-date');
+
+      this.recentConversions = results;
+
+      // Build the recent conversions
+      if (results.length > 0) {
+        const $aside = document.getElementById('aside-content');
+        const $placeholder = document.getElementById('aside-placeholder');
+
+        // Remove the placeholder
+        $aside.removeChild($placeholder);
+
+        // for each conversion build an html element and add it to the DOM
+        results.forEach(conversion => {
+          // Get the values
+          const from = conversion.currencies.split('_')[0];
+          const to = conversion.currencies.split('_')[1];
+          const amount = conversion.amount;
+          const rate = conversion.rate;
+          const timestamp = new Date(conversion.timestamp);
+
+          const div = document.createElement('div');
+
+          const html = `
+            <div class="recent-conversion__from">
+              ${amount} ${from} 
+            </div>
+    
+            <i class="material-icons recent-conversion__icon">chevron_right</i>
+          
+            <div class="recent-conversion__to">
+              ${(amount * rate).toFixed(2)} ${to}
+            </div>
+    
+            <div class="recent-conversion__date">
+              (${timestamp.toLocaleDateString()} - ${timestamp.toLocaleTimeString()})
+            </div>
+          `;
+
+          // Build the class properties
+          div.className = 'recent-conversion animated fadeInDown';
+          div.innerHTML = html;
+
+          // If the aside has no children append this element. Otherwise insert it after the first element
+          if ($aside.firstElementChild === null) {
+            $aside.appendChild(div);
+          } else {
+            $aside.insertBefore(div, $aside.firstElementChild);
+          }
+        });
+      }
+    } catch (err) {
+      // HAndle error
+      console.log(err);
+    }
+  }
+
+  /**
+   * Updates the recentconversions list
+   */
+  async _updateRecentConversions() {
+    try {
+      // Clean up the db and don't execute the next line until
+      await this.localDb.cleanUp('recent', 5, 'by-date');
+
+      // Get the 5 most recent coverserions
+      const results = await this.localDb.getAllItems('recent', 'by-date');
+
+      // If nothing has changed. Bail
+      const lastCurrentItem = this.recentConversions[
+        this.recentConversions.length - 1
+      ];
+      const lastDbItem = results[results.length - 1];
+      if (
+        lastCurrentItem.currencies === lastDbItem.currencies &&
+        lastCurrentItem.amount === lastDbItem.amount
+      )
+        return;
+
+      this.recentConversions = results;
+
+      // Capture the parent node
+      const $aside = document.getElementById('aside-content');
+
+      // The result to insert
+      const toInsert = results[results.length - 1];
+
+      const from = toInsert.currencies.split('_')[0];
+      const to = toInsert.currencies.split('_')[1];
+      const amount = toInsert.amount;
+      const rate = toInsert.rate;
+      const timestamp = new Date(toInsert.timestamp);
+
+      const div = document.createElement('div');
+
+      const html = `
+        <div class="recent-conversion__from">
+          ${amount} ${from} 
+        </div>
+
+        <i class="material-icons recent-conversion__icon">chevron_right</i>
+      
+        <div class="recent-conversion__to">
+          ${(amount * rate).toFixed(2)} ${to}
+        </div>
+
+        <div class="recent-conversion__date">
+          (${timestamp.toLocaleDateString()} - ${timestamp.toLocaleTimeString()})
+        </div>
+      `;
+
+      // Build the class properties
+      div.className = 'recent-conversion animated fadeInDown';
+      div.innerHTML = html;
+
+      // Remove the last node
+      const $lastChild = $aside.lastChild;
+      $aside.removeChild($aside.lastChild);
+
+      // Insert the new node at the top
+      const $firstChild = $aside.firstChild;
+      $aside.insertBefore(div, $firstChild);
+    } catch (err) {
+      // HAndle error
+      console.log(err);
+    }
+  }
+
+  /**
+   * Updates the online status of the application
+   */
+  _updateOnlineStatus() {
+    const $warn = document.getElementById('warning');
+
+    const online = navigator.onLine;
+
+    $warn.className = online ? 'warning--hidden' : 'warning';
+    this.networkState = online ? 'online' : 'offline';
   }
 
   /**
@@ -311,6 +476,157 @@ class CurrencyConverter {
       $submit.setAttribute('disabled', true);
     }
   }
+
+  /**
+   * Registers the service worker
+   */
+  _registerServiceWorker() {
+    if (navigator.serviceWorker) {
+      // Register the SW
+      navigator.serviceWorker.register('/sw.js');
+    }
+  }
+
+  /**
+   *
+   * @param {string} key The key to store in the database
+   * @param {number} rate The rate of the key
+   * @param {number} string The amount that was converted
+   */
+  _addToRecent(key, rate, amount) {
+    const obj = {
+      currencies: key,
+      rate: rate,
+      amount: +amount,
+      timestamp: Date.now()
+    };
+
+    // Store the item in the database
+    this.localDb.addItem('recent', obj);
+  }
+}
+
+/**
+ * This class handles all the interactions with the database
+ */
+class LocalDb {
+  constructor() {
+    this._dbPromise = idb.open('x-change', 1, upgradeDb => {
+      const oldVersion = upgradeDb.oldVersion;
+
+      switch (oldVersion) {
+        case 0:
+          const recentStore = upgradeDb.createObjectStore('recent', {
+            keyPath: 'currencies'
+          });
+          // create index
+          recentStore.createIndex('by-date', 'timestamp');
+      }
+    });
+  }
+
+  /**
+   * This function deletes all objects from a store except the newest specified number
+   * @param {string} store The store to carry out the operation on
+   * @param {number} numberToSave The number of items to save
+   * @param {string} [index] The index to retrieve
+   */
+  async cleanUp(store, numberToSave, index) {
+    const db = await this._dbPromise;
+
+    const tx = db.transaction(store, 'readwrite');
+    const objectStore = tx.objectStore(store);
+
+    // Get the cursor depending on whether or not an index is provided
+    const cursor = index
+      ? await objectStore.index(index).openCursor(null, 'prev')
+      : await objectStore.openCursor(null, 'prev');
+
+    // Advance the cursor
+    const advancedCursor = await cursor.advance(numberToSave);
+
+    // Declare the delete function
+    const deleteRest = function(cursor) {
+      if (!cursor) return;
+
+      cursor.delete();
+      cursor.continue().then(deleteRest);
+    };
+
+    // Call the delete function
+    deleteRest(advancedCursor);
+  }
+
+  /**
+   * This method retireves items from the IDB database
+   *
+   * @param {string} store The store to retrieve the item from
+   * @param {string} key The key of the item to retrieve
+   */
+  async getItem(store, key) {
+    try {
+      const db = await this._dbPromise;
+
+      const tx = db.transaction(store);
+      const objectStore = tx.objectStore(store);
+
+      // Return the value
+      return objectStore.get(key);
+    } catch (err) {
+      // Handle the error
+      // console.log(err);
+    }
+  }
+
+  /**
+   * This method retrieves all the values in the specified store. Also allows an optional index
+   * @param {string} store The name of the store to retrieve all items for
+   * @param {string} [index] The optional index to query by
+   */
+  async getAllItems(store, index) {
+    try {
+      const db = await this._dbPromise;
+
+      const tx = db.transaction(store);
+      const objectStore = tx.objectStore(store);
+
+      if (index) {
+        const storeIndex = objectStore.index(index);
+        return storeIndex.getAll();
+      }
+
+      return objectStore.getAll();
+    } catch (err) {
+      // Handle error
+      console.log(err);
+    }
+  }
+
+  /**
+   * This adds a key value pair into the database
+   * @param {string} store - The store to add the item to
+   * @param {*} value - The value to insert into the database
+   * @param {string} [key] - The optional key of the item to put into the
+   */
+  async addItem(store, value, key) {
+    try {
+      const db = await this._dbPromise;
+
+      const tx = db.transaction(store, 'readwrite');
+      const objectStore = tx.objectStore(store);
+
+      if (key) {
+        objectStore.put(value, key);
+      } else {
+        objectStore.put(value);
+      }
+
+      return tx.complete;
+    } catch (err) {
+      // Handle the error here
+      // console.log(err);
+    }
+  }
 }
 
 // ======================================================================//
@@ -365,7 +681,7 @@ class Xchange {
  * @param {string} code The alpha 2 country code. Default is AD
  */
 function getFlagUrl(code = 'AD') {
-  return `http://www.countryflags.io/${code.toLowerCase()}/flat/32.png`;
+  return `http://www.countryflags.io/${code.toLowerCase()}/flat/24.png`;
 }
 
 // ======================================================================//
@@ -376,10 +692,15 @@ function getFlagUrl(code = 'AD') {
  * This function runs the initialisation logic. It's also the main 'entry point' of the application
  */
 function init() {
-  const cc = new CurrencyConverter();
+  const db = new LocalDb();
   const xChange = new Xchange();
+  const cc = new CurrencyConverter(db);
 
+  // Other Init Logic
   document.addEventListener('DOMContentLoaded', () => {
+    // Register the SW immediately
+    cc._registerServiceWorker();
+
     // Initialise the selectors on document ready with the "Loading options"
     const $elems = document.querySelectorAll('select');
     M.FormSelect.init($elems);
@@ -391,6 +712,7 @@ function init() {
         cc.countries = cc.sortCountriesByName(res);
         cc.buildSelectOptions();
         cc.setEventListeners();
+        cc.initRecentConversions();
       })
       .catch(err => {
         cc.errorLoadingCountries();
