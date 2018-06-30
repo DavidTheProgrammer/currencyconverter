@@ -41,7 +41,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   // Respond with cached responses if any
   event.respondWith(
-    // If there's a response in the cache. Return response
+    // If there's a response in the cache else Return response
     caches.match(event.request).then(res => res || fetch(event.request))
   );
 });
