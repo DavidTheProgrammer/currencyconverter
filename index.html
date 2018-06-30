@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Oswald" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,16 +23,21 @@
         <a href="#!" class="brand-logo center">X-CHANGE</a>
       </div>
     </nav>
-
-    <div class="warning">
-
-    </div>
   </header>
 
   <div class="main-wrapper container">
+    <div id="warning" class="warning--hidden">
+      <div class="warning__icon">
+        <i class="material-icons small">warning</i>
+      </div>
+      <p class="warning__text">
+        <span class="warning__text--bold">Offline mode.</span> Recent conversions only.
+      </p>
+    </div>
+
     <div class="row">
-      <main class="main col s12 l8">
-        <h5 class="main__heading">Convert</h5>
+      <main class="main col s12 l7">
+        <h4 class="main__heading">Convert</h4>
 
         <form action="#" id="form">
           <div class="inputs row">
@@ -72,8 +78,12 @@
 
       </main>
 
-      <aside class="aside col s12 l3 offset-l1">
-        <h5 class="aside__heading">Recent Conversions</h5>
+      <aside class="aside col s12 l4 offset-l1">
+        <h4 class="aside__heading">Recent Conversions</h4>
+
+        <div class="aside__content" id="aside-content">
+          <p class="aside__placeholder" id="aside-placeholder">Recent conversions will show up here</p>
+        </div>
       </aside>
     </div>
 

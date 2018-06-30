@@ -7,6 +7,7 @@ self.addEventListener('install', event => {
     '/assets/css/materialize.min.css',
     '/main.js',
     'https://fonts.googleapis.com/icon?family=Material+Icons',
+    'https://fonts.googleapis.com/css?family=Oswald',
     'https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css',
     'https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js',
     'https://cdn.jsdelivr.net/npm/idb@2.1.3/lib/idb.min.js',
@@ -42,6 +43,24 @@ self.addEventListener('fetch', event => {
   // Respond with cached responses if any
   event.respondWith(
     // If there's a response in the cache else Return response
-    caches.match(event.request).then(res => res || fetch(event.request))
+    caches.match(event.request).then(res => {
+      if (res) return res;
+
+      return fetch(event.request).then(response => {
+        const clone = response.clone();
+
+        if (response.ok || response.type === 'opaque') {
+          // Cache the response if the url begins with country flags
+          if (event.request.url.startsWith('http://www.countryflags.io/')) {
+            caches.open(activeCache).then(cache => {
+              cache.put(event.request, clone);
+            });
+          }
+        }
+
+        // Return the response
+        return response;
+      });
+    })
   );
 });
