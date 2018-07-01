@@ -295,16 +295,18 @@ class CurrencyConverter {
       // Get the 5 most recent coverserions
       const results = await this.localDb.getAllItems('recent', 'by-date');
 
-      // If nothing has changed. Bail
-      const lastCurrentItem = this.recentConversions[
-        this.recentConversions.length - 1
-      ];
-      const lastDbItem = results[results.length - 1];
-      if (
-        lastCurrentItem.currencies === lastDbItem.currencies &&
-        lastCurrentItem.amount === lastDbItem.amount
-      )
-        return;
+      if (this.recentConversions.length > 0) {
+        const lastCurrentItem = this.recentConversions[
+          this.recentConversions.length - 1
+        ];
+        const lastDbItem = results[results.length - 1];
+        // If nothing has changed. Bail
+        if (
+          lastCurrentItem.currencies === lastDbItem.currencies &&
+          lastCurrentItem.amount === lastDbItem.amount
+        )
+          return;
+      }
 
       this.recentConversions = results;
 
@@ -342,13 +344,28 @@ class CurrencyConverter {
       div.className = 'recent-conversion animated fadeInDown';
       div.innerHTML = html;
 
-      // Remove the last node
-      const $lastChild = $aside.lastChild;
-      $aside.removeChild($aside.lastChild);
+      // Query the recent conversions
+      const $recentConversions = document.querySelectorAll(
+        '.recent-conversion'
+      );
 
-      // Insert the new node at the top
-      const $firstChild = $aside.firstChild;
-      $aside.insertBefore(div, $firstChild);
+      if ($recentConversions.length === 0) {
+        const $placeholder = document.getElementById('aside-placeholder');
+        $aside.removeChild($placeholder);
+        $aside.appendChild(div);
+      } else if ($recentConversions.length < 5) {
+        const $firstChild = $aside.firstChild;
+        $aside.insertBefore(div, $firstChild);
+        return;
+      } else {
+        // Remove the last node
+        const $lastChild = $aside.lastChild;
+        $aside.removeChild($aside.lastChild);
+
+        // Insert the new node at the top
+        const $firstChild = $aside.firstChild;
+        $aside.insertBefore(div, $firstChild);
+      }
     } catch (err) {
       // HAndle error
       console.log(err);
@@ -480,10 +497,10 @@ class CurrencyConverter {
   /**
    * Registers the service worker
    */
-  _registerServiceWorker() {
+  registerServiceWorker() {
     if (navigator.serviceWorker) {
       // Register the SW
-      navigator.serviceWorker.register('/sw.js');
+      navigator.serviceWorker.register('./sw.js');
     }
   }
 
@@ -542,6 +559,8 @@ class LocalDb {
       ? await objectStore.index(index).openCursor(null, 'prev')
       : await objectStore.openCursor(null, 'prev');
 
+    // If there's no cursor, bail
+    if (!cursor) return;
     // Advance the cursor
     const advancedCursor = await cursor.advance(numberToSave);
 
@@ -699,7 +718,7 @@ function init() {
   // Other Init Logic
   document.addEventListener('DOMContentLoaded', () => {
     // Register the SW immediately
-    cc._registerServiceWorker();
+    cc.registerServiceWorker();
 
     // Initialise the selectors on document ready with the "Loading options"
     const $elems = document.querySelectorAll('select');
