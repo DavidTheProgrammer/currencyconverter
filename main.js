@@ -700,7 +700,8 @@ class Xchange {
  * @param {string} code The alpha 2 country code. Default is AD
  */
 function getFlagUrl(code = 'AD') {
-  return `https://www.countryflags.io/${code.toLowerCase()}/flat/24.png`;
+  // This is a disaster. Forced to use a proxy that returns content at 10req/second... Once cached though, things move quick
+  return `https://thingproxy.freeboard.io/fetch/http://www.countryflags.io/${code.toLowerCase()}/flat/32.png`;
 }
 
 // ======================================================================//
